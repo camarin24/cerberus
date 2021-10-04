@@ -33,17 +33,12 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             var clients = (await GetFilter(m =>
                 m.ClientId == clientId && m.ClientApplications.Any(cp => cp.ApplicationId == appId))).ToList();
             if (!clients.Any()) throw new DomainException(_messagesManager.GetMessage("UnauthorizedApplicationClient"));
-            return clients.FirstOrDefault();
+            return _mapper.Map<ClientDto>(clients.First());
         }
 
-        public async Task<IEnumerable<ClientDto>> GetFilter(Expression<Func<Client, bool>> filter)
+        public async Task<IEnumerable<Client>> GetFilter(Expression<Func<Client, bool>> filter)
         {
-            return _mapper.Map<IEnumerable<ClientDto>>(await _repository.Get(filter));
-        }
-
-        public async Task<ClientDto> Create(ClientDto dto)
-        {
-            throw new NotImplementedException();
+            return await _repository.Get(filter);
         }
     }
 }

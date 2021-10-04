@@ -4,11 +4,16 @@ namespace Intecgra.Cerberus.Domain.Dtos.Auth
 {
     public class AuthorizationDto
     {
-        public string Sub { get; set; }
-        public string Nickname { get; set; }
+        public AuthorizationDto(string token, string name, string picture, string email)
+        {
+            Token = token;
+            Name = name;
+            Picture = picture;
+            Email = email;
+        }
         public string Name { get; set; }
         public string Picture { get; set; }
         public string Email { get; set; }
-        public bool EmailVerified { get; set; }
+        public string Token { get; set; }
     }
 }

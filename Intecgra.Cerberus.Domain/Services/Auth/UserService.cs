@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Intecgra.Cerberus.Domain.Dtos.Auth;
@@ -10,6 +13,9 @@ using Intecgra.Cerberus.Domain.Exceptions;
 using Intecgra.Cerberus.Domain.Ports.Auth;
 using Intecgra.Cerberus.Domain.Ports.Data;
 using Intecgra.Cerberus.Domain.Utilities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 namespace Intecgra.Cerberus.Domain.Services.Auth
 {
@@ -20,14 +26,19 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
         private readonly IMapper _mapper;
         private readonly IMessagesManager _messagesManager;
         private readonly IClientService _clientService;
+        private readonly IConfiguration _configuration;
+        private readonly IPermissionService _permissionService;
 
         public UserService(IGenericRepository<User> repository, IMapper mapper, IMessagesManager messagesManager,
-            IClientService clientService) : base(repository, mapper)
+            IClientService clientService, IConfiguration configuration, IPermissionService permissionService) : base(
+            repository, mapper)
         {
             _repository = repository;
             _mapper = mapper;
             _messagesManager = messagesManager;
             _clientService = clientService;
+            _configuration = configuration;
+            _permissionService = permissionService;
         }
 
         public new async Task<UserDto> Create(UserDto dto)
@@ -53,14 +64,35 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             if (user == null) throw new DomainException(_messagesManager.GetMessage("InvalidPassword"));
 
             var client = await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
+            var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
 
-
-            return null;
+            return new AuthorizationDto(GenerateJwtToken(user, permissions.Select(m => m.Name)),
+                user.Name, user.Picture, user.Email);
         }
 
         public async Task<IEnumerable<UserDto>> GetFilter(Expression<Func<User, bool>> filter)
         {
             return _mapper.Map<IEnumerable<UserDto>>(await _repository.Get(filter));
+        }
+
+        private string GenerateJwtToken(UserDto user, IEnumerable<string> permissions)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                    new Claim("permissions", JsonConvert.SerializeObject(permissions))
+                }),
+                Expires = DateTime.UtcNow.AddDays(15),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature),
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

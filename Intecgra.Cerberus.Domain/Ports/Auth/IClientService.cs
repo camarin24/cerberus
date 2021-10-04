@@ -17,6 +17,6 @@ namespace Intecgra.Cerberus.Domain.Ports.Auth
         /// <returns></returns>
         Task<ClientDto> GetClientByAppIdAndId(Guid appId, Guid clientId);
 
-        Task<IEnumerable<ClientDto>> GetFilter(Expression<Func<Client, bool>> filter);
+        Task<IEnumerable<Client>> GetFilter(Expression<Func<Client, bool>> filter);
     }
 }

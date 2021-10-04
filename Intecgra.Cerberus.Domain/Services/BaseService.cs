@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Intecgra.Cerberus.Domain.Ports;
@@ -66,9 +63,9 @@ namespace Intecgra.Cerberus.Domain.Services
             await _repository.DeleteRange(entities);
         }
 
-        public Task<TDto> Create(TDto dto)
+        public async Task<TDto> Create(TDto dto)
         {
-            throw new NotImplementedException();
+            return await Save(dto);
         }
     }
 }

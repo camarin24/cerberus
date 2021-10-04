@@ -6,8 +6,13 @@ namespace Intecgra.Cerberus.Domain.Config
 {
     public class MappingProfile : Profile
     {
-        public MappingProfile() {
+        public MappingProfile()
+        {
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<Client, ClientDto>().ReverseMap();
+            CreateMap<ClientApplication, ClientApplicationDto>().ReverseMap();
+            CreateMap<UserPermissionDto, UserPermission>().ReverseMap();
+            CreateMap<PermissionDto, Permission>().ReverseMap();
         }
     }
 }
