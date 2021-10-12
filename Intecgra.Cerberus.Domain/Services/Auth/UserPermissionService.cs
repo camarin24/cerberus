@@ -23,7 +23,7 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             _mapper = mapper;
         }
 
-        public async Task<List<UserPermissionDto>> GetPermissionByUserId(int userId)
+        public async Task<List<UserPermissionDto>> GetPermissionByUserId(Guid userId)
         {
             var permissions = await GetFilter(m => m.UserId == userId);
             if (permissions == null) return new List<UserPermissionDto>();

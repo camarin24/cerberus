@@ -14,6 +14,7 @@ using Intecgra.Cerberus.Domain.Ports.Auth;
 using Intecgra.Cerberus.Domain.Ports.Data;
 using Intecgra.Cerberus.Domain.Utilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
@@ -28,9 +29,11 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
         private readonly IClientService _clientService;
         private readonly IConfiguration _configuration;
         private readonly IPermissionService _permissionService;
+        private readonly ILogger<UserService> _logger;
 
         public UserService(IGenericRepository<User> repository, IMapper mapper, IMessagesManager messagesManager,
-            IClientService clientService, IConfiguration configuration, IPermissionService permissionService) : base(
+            IClientService clientService, IConfiguration configuration, IPermissionService permissionService,
+            ILogger<UserService> logger) : base(
             repository, mapper)
         {
             _repository = repository;
@@ -39,6 +42,7 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             _clientService = clientService;
             _configuration = configuration;
             _permissionService = permissionService;
+            _logger = logger;
         }
 
         public new async Task<UserDto> Create(UserDto dto)
@@ -48,14 +52,6 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             return await Save(dto);
         }
 
-
-        /// <summary>
-        /// Login the user through the specific client database 
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        /// <exception cref="DomainException"></exception>
-        /// <exception cref="Exception"></exception>
         public async Task<AuthorizationDto> Login(LoginDto request)
         {
             var users = (await GetFilter(u => u.Email.Equals(request.Email))).ToList();
@@ -66,8 +62,8 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             var client = await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
             var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
 
-            return new AuthorizationDto(GenerateJwtToken(user, permissions.Select(m => m.Name)),
-                user.Name, user.Picture, user.Email);
+            return new AuthorizationDto(GenerateJwtToken(user),
+                user.Name, user.Picture, user.Email, permissions.Select(m => m.Name));
         }
 
         public async Task<IEnumerable<UserDto>> GetFilter(Expression<Func<User, bool>> filter)
@@ -75,7 +71,16 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             return _mapper.Map<IEnumerable<UserDto>>(await _repository.Get(filter));
         }
 
-        private string GenerateJwtToken(UserDto user, IEnumerable<string> permissions)
+        public async Task<MeResponseDto> Me(MeRequestDto request)
+        {
+            var claims = ValidateToken(request.Token);
+            var user = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, user);
+            var me = _mapper.Map<MeDto>(await GetById(user));
+            return new MeResponseDto(me, permissions.Select(m => m.Name));
+        }
+
+        private string GenerateJwtToken(UserDto user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
@@ -85,14 +90,30 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim("permissions", JsonConvert.SerializeObject(permissions))
                 }),
-                Expires = DateTime.UtcNow.AddDays(15),
+                Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private ClaimsPrincipal ValidateToken(string token)
+        {
+            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
+            var handler = new JwtSecurityTokenHandler();
+            var validations = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+            var claims = handler.ValidateToken(token, validations, out var tokenSecure);
+            return claims;
         }
     }
 }

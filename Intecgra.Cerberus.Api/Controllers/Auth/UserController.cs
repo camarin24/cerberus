@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Intecgra.Cerberus.Api.Controllers.Auth
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     [AllowAnonymous]
     public class UserController : BaseController<UserDto>
@@ -25,10 +25,17 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
             return await _service.Get();
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<AuthorizationDto> Login([FromBody] LoginDto request)
         {
             return await _service.Login(request);
+        }
+
+
+        [HttpPost("me")]
+        public async Task<MeResponseDto> Me([FromBody] MeRequestDto request)
+        {
+            return await _service.Me(request);
         }
     }
 }

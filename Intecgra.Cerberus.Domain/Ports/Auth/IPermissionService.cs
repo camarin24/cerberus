@@ -13,6 +13,6 @@ namespace Intecgra.Cerberus.Domain.Ports.Auth
         /// <param name="appId"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<List<PermissionDto>> GetPermissionsByApplicationAndUser(Guid appId, int userId);
+        Task<List<PermissionDto>> GetPermissionsByApplicationAndUser(Guid appId, Guid userId);
     }
 }

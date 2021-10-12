@@ -16,13 +16,17 @@ create table auth.client(
 );
 
 create table auth.user(
-                          user_id serial not null primary key,
+                          user_id uuid primary key DEFAULT uuid_generate_v4 (),
                           client_id uuid not null,
                           name VARCHAR(250),
                           email VARCHAR(250),
                           picture VARCHAR,
+                          
                           foreign key (client_id) references auth.client(client_id)
 );
+
+ALTER TABLE auth."user" ADD password text NOT NULL;
+ALTER TABLE auth."user" ADD salt text NOT NULL;
 
 
 create table auth.permission(
@@ -37,7 +41,7 @@ create table auth.permission(
 create table auth.user_permission(
                                      user_permission_id serial not null primary key,
                                      permission_id int not null,
-                                     user_id int not null,
+                                     user_id uuid not null,
                                      foreign key (permission_id) references auth.permission(permission_id),
                                      foreign key (user_id) references auth.user(user_id)
 );

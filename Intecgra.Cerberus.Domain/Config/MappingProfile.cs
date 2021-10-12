@@ -13,6 +13,7 @@ namespace Intecgra.Cerberus.Domain.Config
             CreateMap<ClientApplication, ClientApplicationDto>().ReverseMap();
             CreateMap<UserPermissionDto, UserPermission>().ReverseMap();
             CreateMap<PermissionDto, Permission>().ReverseMap();
+            CreateMap<MeDto, UserDto>().ReverseMap();
         }
     }
 }

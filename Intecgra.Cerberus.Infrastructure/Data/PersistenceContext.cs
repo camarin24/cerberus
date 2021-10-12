@@ -102,7 +102,9 @@ namespace Intecgra.Cerberus.Infrastructure.Data
             {
                 entity.ToTable("user", "auth");
 
-                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id")
+                    .HasDefaultValueSql("uuid_generate_v4()");
 
                 entity.Property(e => e.ClientId).HasColumnName("client_id");
 
@@ -113,10 +115,10 @@ namespace Intecgra.Cerberus.Infrastructure.Data
                 entity.Property(e => e.Name)
                     .HasMaxLength(250)
                     .HasColumnName("name");
-                
+
                 entity.Property(e => e.Salt)
                     .HasColumnName("salt");
-                
+
                 entity.Property(e => e.Password)
                     .HasColumnName("password");
 

@@ -26,7 +26,7 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             _userPermissionService = userPermissionService;
         }
 
-        public async Task<List<PermissionDto>> GetPermissionsByApplicationAndUser(Guid appId, int userId)
+        public async Task<List<PermissionDto>> GetPermissionsByApplicationAndUser(Guid appId, Guid userId)
         {
             var permissions = await _repository.Get(m => m.ApplicationId == appId);
             if (permissions == null) return new List<PermissionDto>();
