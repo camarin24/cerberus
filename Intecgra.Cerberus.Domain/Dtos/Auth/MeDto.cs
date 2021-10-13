@@ -28,5 +28,6 @@ namespace Intecgra.Cerberus.Domain.Dtos.Auth
         public string Name { get; set; }
         public string Picture { get; set; }
         public string Email { get; set; }
+        public Guid ClientId { get; set; }
     }
 }
