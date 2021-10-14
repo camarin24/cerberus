@@ -62,8 +62,15 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             var client = await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
             var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
 
-            return new AuthorizationDto(GenerateJwtToken(user),
-                user.Name, user.Picture, user.Email, permissions.Select(m => m.Name));
+            return GenerateAuthorizationDto(user, permissions);
+        }
+
+        private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
+        {
+            var expiration = DateTime.UtcNow.AddSeconds(20);
+            return new AuthorizationDto(GenerateJwtToken(user, expiration),
+                user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
+                GenerateJwtRefreshToken(user), expiration);
         }
 
         public async Task<IEnumerable<UserDto>> GetFilter(Expression<Func<User, bool>> filter)
@@ -80,7 +87,18 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             return new MeResponseDto(me, permissions.Select(m => m.Name));
         }
 
-        private string GenerateJwtToken(UserDto user)
+        public async Task<AuthorizationDto> RefreshToken(MeRequestDto request)
+        {
+            var claims = ValidateToken(request.Token);
+            var userId = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var permissions =
+                await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, userId);
+            var user = await GetById(userId);
+            return GenerateAuthorizationDto(user, permissions);
+        }
+
+
+        private string GenerateJwtToken(UserDto user, DateTime expiration)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
@@ -91,7 +109,27 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 }),
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = expiration,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature),
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+
+        private string GenerateJwtRefreshToken(UserDto user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature),
             };

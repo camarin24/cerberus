@@ -21,5 +21,7 @@ namespace Intecgra.Cerberus.Domain.Ports.Auth
 
         Task<IEnumerable<UserDto>> GetFilter(Expression<Func<User, bool>> filter);
         Task<MeResponseDto> Me(MeRequestDto request);
+
+        Task<AuthorizationDto> RefreshToken(MeRequestDto request);
     }
 }

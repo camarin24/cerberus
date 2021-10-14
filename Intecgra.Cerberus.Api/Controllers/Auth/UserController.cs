@@ -30,6 +30,12 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
         {
             return await _service.Login(request);
         }
+        
+        [HttpPost("refresh-token")]
+        public async Task<AuthorizationDto> RefreshToken([FromBody] MeRequestDto request)
+        {
+            return await _service.RefreshToken(request);
+        }
 
 
         [HttpPost("me")]
