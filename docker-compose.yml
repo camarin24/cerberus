@@ -1,0 +1,14 @@
+version: '3.3'
+
+networks:
+  pg_network:
+    external: true
+
+services:
+  cerberus-api:
+    build: .
+    networks:
+      - pg_network
+    ports:
+      - '5000:80'
+    restart: always
