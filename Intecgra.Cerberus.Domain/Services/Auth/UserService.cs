@@ -67,7 +67,7 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
 
         private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
         {
-            var expiration = DateTime.UtcNow.AddSeconds(20);
+            var expiration = DateTime.UtcNow.AddDays(1);
             return new AuthorizationDto(GenerateJwtToken(user, expiration),
                 user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
                 GenerateJwtRefreshToken(user), expiration);

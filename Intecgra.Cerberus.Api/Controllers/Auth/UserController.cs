@@ -18,6 +18,20 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
         {
             _service = service;
         }
+        
+        
+        [HttpPost("create")]
+        public async Task<UserDto> Create(CreateUserDto request)
+        {
+            var user = new UserDto
+            {
+                Email = request.Email,
+                Name = request.Email,
+                Password = request.Password,
+                ClientId = request.ClientId
+            };
+            return await _service.Create(user);
+        }
 
         [HttpGet]
         public async Task<IEnumerable<UserDto>> Get()

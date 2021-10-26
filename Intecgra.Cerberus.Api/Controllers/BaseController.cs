@@ -13,12 +13,5 @@ namespace Intecgra.Cerberus.Api.Controllers
         {
             _service = service;
         }
-
-
-        [HttpPost("create")]
-        public async Task<TDto> Create(TDto request)
-        {
-            return await _service.Create(request);
-        }
     }
 }
