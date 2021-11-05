@@ -13,6 +13,7 @@ namespace Intecgra.Cerberus.Infrastructure.Data
 
         public PersistenceContext(DbContextOptions<PersistenceContext> options) : base(options)
         {
+            
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
