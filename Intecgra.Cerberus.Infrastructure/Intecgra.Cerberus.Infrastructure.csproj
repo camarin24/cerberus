@@ -11,8 +11,4 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Intecgra.Cerberus.Domain\Intecgra.Cerberus.Domain.csproj" />
-  </ItemGroup>
-
 </Project>

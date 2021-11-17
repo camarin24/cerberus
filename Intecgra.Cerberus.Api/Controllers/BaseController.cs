@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Intecgra.Cerberus.Domain.Ports;
 using Microsoft.AspNetCore.Mvc;
 

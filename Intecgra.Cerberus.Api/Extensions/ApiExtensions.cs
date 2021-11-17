@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Intecgra.Cerberus.Domain.Ports.Data;
+using Intecgra.Cerberus.Domain.Ports.Repository;
 using Intecgra.Cerberus.Domain.Services;
 using Intecgra.Cerberus.Domain.Utilities;
-using Intecgra.Cerberus.Infrastructure.Data;
+using Intecgra.Cerberus.Repository.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Intecgra.Cerberus.Api.Extensions
@@ -23,11 +23,23 @@ namespace Intecgra.Cerberus.Api.Extensions
             var services = assemblies.SelectMany(a => a.GetTypes())
                 .Where(t => t.CustomAttributes.Any(c => c.AttributeType == typeof(DomainService)));
 
+            var repositories = assemblies.SelectMany(a => a.GetTypes())
+                .Where(t => !t.Name.StartsWith("I") && !t.Name.Contains("GenericRepository") &&
+                            t.Name.Contains("Repository"));
+
+            foreach (Type re in repositories)
+            {
+                var repositoryInterface = re.GetInterfaces().FirstOrDefault(i => i.Name.Contains(re.Name));
+                if (null == repositoryInterface) continue;
+                service.AddTransient(repositoryInterface, re);
+            }
+
             foreach (Type se in services)
             {
                 var serviceInterface = se.GetInterfaces().FirstOrDefault(i => i.FullName.Contains(se.Name));
                 service.AddTransient(serviceInterface, se);
             }
+
             return service;
         }
     }

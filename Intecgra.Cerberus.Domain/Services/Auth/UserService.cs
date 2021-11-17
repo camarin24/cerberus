@@ -11,7 +11,7 @@ using Intecgra.Cerberus.Domain.Dtos.Auth;
 using Intecgra.Cerberus.Domain.Entities;
 using Intecgra.Cerberus.Domain.Exceptions;
 using Intecgra.Cerberus.Domain.Ports.Auth;
-using Intecgra.Cerberus.Domain.Ports.Data;
+using Intecgra.Cerberus.Domain.Ports.Repository;
 using Intecgra.Cerberus.Domain.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -45,23 +45,25 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             _logger = logger;
         }
 
-        public new async Task<UserDto> Create(UserDto dto)
+        public async Task<UserDto> Create(UserDto dto)
         {
             dto.Salt = PasswordHash.CreateSalt();
             dto.Password = PasswordHash.Create(dto.Password, dto.Salt);
-            return await Save(dto);
+            return await Save<Guid>(dto);
         }
 
         public async Task<AuthorizationDto> Login(LoginDto request)
         {
-            var users = (await GetFilter(u => u.Email.Equals(request.Email))).ToList();
+            var users =
+                (await Get(where: new Dictionary<string, dynamic>() {{"email", request.Email}})).ToList();
             if (users == null || !users.Any()) throw new DomainException(_messagesManager.GetMessage("InvalidUser"));
             var user = users.FirstOrDefault(m => PasswordHash.Validate(request.Password, m.Password, m.Salt));
             if (user == null) throw new DomainException(_messagesManager.GetMessage("InvalidPassword"));
 
-            var client = await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
-            var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
+            // Hacemos esto para asegurarnos que el cliente tiene acceso a la app solicitada
+            await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
 
+            var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
             return GenerateAuthorizationDto(user, permissions);
         }
 
@@ -71,11 +73,6 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             return new AuthorizationDto(GenerateJwtToken(user, expiration),
                 user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
                 GenerateJwtRefreshToken(user), expiration);
-        }
-
-        public async Task<IEnumerable<UserDto>> GetFilter(Expression<Func<User, bool>> filter)
-        {
-            return _mapper.Map<IEnumerable<UserDto>>(await _repository.Get(filter));
         }
 
         public async Task<MeResponseDto> Me(MeRequestDto request)

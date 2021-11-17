@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
+using Intecgra.Cerberus.Infrastructure.Data.Attributes;
 
 #nullable disable
 
 namespace Intecgra.Cerberus.Domain.Entities
 {
-    public partial class ClientApplication
+    [Table("auth.client_application")]
+    public class ClientApplication
     {
+        [Column("client_application_id", true)]
         public int ClientApplicationId { get; set; }
-        public Guid ApplicationId { get; set; }
-        public Guid ClientId { get; set; }
 
-        public virtual Application Application { get; set; }
-        public virtual Client Client { get; set; }
+        [Column("application_id")] public Guid ApplicationId { get; set; }
+        [Column("client_id")] public Guid ClientId { get; set; }
     }
 }

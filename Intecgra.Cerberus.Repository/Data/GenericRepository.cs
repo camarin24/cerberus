@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using Dapper.Contrib.Extensions;
-using Intecgra.Cerberus.Domain.Ports.Data;
+using Intecgra.Cerberus.Domain.Ports.Repository;
 using Intecgra.Cerberus.Infrastructure.Utils;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
-namespace Intecgra.Cerberus.Infrastructure.Data
+namespace Intecgra.Cerberus.Repository.Data
 {
-    public class DapperGenericRepository<TE> : IDisposable, IDapperGenericRepository<TE> where TE : class, new()
+    public class GenericRepository<TE> : IDisposable, IGenericRepository<TE> where TE : class, new()
     {
         private readonly IConfiguration _configuration;
 
-        public DapperGenericRepository(IConfiguration configuration)
+        public GenericRepository(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -32,6 +32,13 @@ namespace Intecgra.Cerberus.Infrastructure.Data
             if (string.IsNullOrEmpty(query)) query = QueryBuilder.BuildSelect<TE>(where);
             await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
             return await conn.QueryAsync<TE>(query, where);
+        }
+        
+        public async Task<IEnumerable<TE>> ExecuteQuery(string query, Dictionary<string, dynamic> queryParams)
+        {
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
+            await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
+            return await conn.QueryAsync<TE>(query, queryParams);
         }
 
         public async Task<IEnumerable<TE>> GetIn(string query = null, object @in = null)
@@ -54,6 +61,7 @@ namespace Intecgra.Cerberus.Infrastructure.Data
 
         public async Task<TP> Save<TP>(TE entity)
         {
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
             var query = QueryBuilder.BuildInsert(entity, out var queryParams);
             await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
             return await conn.ExecuteScalarAsync<TP>(query, queryParams);
@@ -61,14 +69,16 @@ namespace Intecgra.Cerberus.Infrastructure.Data
 
         public async Task Update(TE entity)
         {
-            string query = QueryBuilder.BuildUpdate(entity, out var queryParams);
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
+            var query = QueryBuilder.BuildUpdate(entity, out var queryParams);
             await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
             await conn.QueryAsync(query, queryParams);
         }
 
         public async Task Delete(TE entity)
         {
-            string query = QueryBuilder.BuildDelete(entity, out var queryParams);
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
+            var query = QueryBuilder.BuildDelete(entity, out var queryParams);
             await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
             await conn.QueryAsync(query, queryParams);
         }

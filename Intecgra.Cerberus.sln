@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intecgra.Cerberus.Domain", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intecgra.Cerberus.Infrastructure", "Intecgra.Cerberus.Infrastructure\Intecgra.Cerberus.Infrastructure.csproj", "{1BAD9E29-9F6A-417B-B070-D24230F41351}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intecgra.Cerberus.Repository", "Intecgra.Cerberus.Repository\Intecgra.Cerberus.Repository.csproj", "{2EE9ADEF-86C5-493F-8A4C-B08677483ED8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{1BAD9E29-9F6A-417B-B070-D24230F41351}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BAD9E29-9F6A-417B-B070-D24230F41351}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BAD9E29-9F6A-417B-B070-D24230F41351}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EE9ADEF-86C5-493F-8A4C-B08677483ED8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EE9ADEF-86C5-493F-8A4C-B08677483ED8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EE9ADEF-86C5-493F-8A4C-B08677483ED8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EE9ADEF-86C5-493F-8A4C-B08677483ED8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Intecgra.Cerberus.Domain.Dtos.Auth;
 using Intecgra.Cerberus.Domain.Entities;
 using Intecgra.Cerberus.Domain.Ports.Auth;
-using Intecgra.Cerberus.Domain.Ports.Data;
+using Intecgra.Cerberus.Domain.Ports.Repository;
 
 namespace Intecgra.Cerberus.Domain.Services.Auth
 {
@@ -25,14 +24,10 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
 
         public async Task<List<UserPermissionDto>> GetPermissionByUserId(Guid userId)
         {
-            var permissions = await GetFilter(m => m.UserId == userId);
+            var permissions =
+                await _repository.Get(where: new Dictionary<string, dynamic>() {{"user_id", userId}});
             if (permissions == null) return new List<UserPermissionDto>();
             return _mapper.Map<List<UserPermissionDto>>(permissions);
-        }
-
-        public async Task<IEnumerable<UserPermission>> GetFilter(Expression<Func<UserPermission, bool>> filter)
-        {
-            return await _repository.Get(filter);
         }
     }
 }

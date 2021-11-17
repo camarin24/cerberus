@@ -1,14 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Intecgra.Cerberus.Domain.Ports.Data
+namespace Intecgra.Cerberus.Domain.Ports.Repository
 {
-    public interface IDapperGenericRepository<TE> where TE : class
+    public interface IGenericRepository<TE> where TE : class
     {
         Task<IEnumerable<TE>> GetAll();
         Task<IEnumerable<TE>> Get(string query = null, Dictionary<string, dynamic> where = null);
         Task<IEnumerable<TE>> GetIn(string query = null, object @in = null);
+        Task<IEnumerable<TE>> ExecuteQuery(string query, Dictionary<string, dynamic> queryParams);
         Task<TE> GetById(object id);
         Task<TP> Save<TP>(TE entity);
         Task SaveRange(IEnumerable<TE> entity);

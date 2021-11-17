@@ -22,4 +22,12 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Ports\Data" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Intecgra.Cerberus.Infrastructure\Intecgra.Cerberus.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

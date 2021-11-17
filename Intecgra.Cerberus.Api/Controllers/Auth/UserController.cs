@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Intecgra.Cerberus.Domain.Dtos.Auth;
@@ -18,8 +19,8 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
         {
             _service = service;
         }
-        
-        
+
+
         [HttpPost("create")]
         public async Task<UserDto> Create(CreateUserDto request)
         {
@@ -30,7 +31,7 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
                 Password = request.Password,
                 ClientId = request.ClientId
             };
-            return await _service.Create(user);
+            return await _service.Create<Guid>(user);
         }
 
         [HttpGet]
@@ -44,7 +45,7 @@ namespace Intecgra.Cerberus.Api.Controllers.Auth
         {
             return await _service.Login(request);
         }
-        
+
         [HttpPost("refresh-token")]
         public async Task<AuthorizationDto> RefreshToken([FromBody] MeRequestDto request)
         {

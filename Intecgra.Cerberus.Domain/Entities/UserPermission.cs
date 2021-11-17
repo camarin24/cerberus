@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Intecgra.Cerberus.Infrastructure.Data.Attributes;
 
 #nullable disable
 
 namespace Intecgra.Cerberus.Domain.Entities
 {
-    public partial class UserPermission
+    [Table("auth.user_permission")]
+    public class UserPermission
     {
-        public int UserPermissionId { get; set; }
-        public int PermissionId { get; set; }
-        public Guid UserId { get; set; }
-
-        public virtual Permission Permission { get; set; }
-        public virtual User User { get; set; }
+        [Column("user_permission_id", true)] public int UserPermissionId { get; set; }
+        [Column("permission_id")] public int PermissionId { get; set; }
+        [Column("user_id")] public Guid UserId { get; set; }
     }
 }

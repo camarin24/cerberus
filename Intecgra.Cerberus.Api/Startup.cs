@@ -32,14 +32,7 @@ namespace Intecgra.Cerberus.Api
             var mapper = mapConfig.CreateMapper();
             services.AddSingleton(mapper);
 
-
-            services.AddDbContext<PersistenceContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("EntityContext")));
-
-            services.AddControllers(cfg =>
-            {
-                cfg.Filters.Add(typeof(AppExceptionFilter));
-            });
+            services.AddControllers(cfg => { cfg.Filters.Add(typeof(AppExceptionFilter)); });
 
             services.AddAuthentication(options =>
             {

@@ -10,6 +10,5 @@ namespace Intecgra.Cerberus.Domain.Ports.Auth
     public interface IUserPermissionService : IBaseService<UserPermissionDto>
     {
         Task<List<UserPermissionDto>> GetPermissionByUserId(Guid userId);
-        Task<IEnumerable<UserPermission>> GetFilter(Expression<Func<UserPermission, bool>> filter);
     }
 }

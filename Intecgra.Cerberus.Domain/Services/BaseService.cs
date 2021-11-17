@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Intecgra.Cerberus.Domain.Ports;
-using Intecgra.Cerberus.Domain.Ports.Data;
+using Intecgra.Cerberus.Domain.Ports.Repository;
 
 namespace Intecgra.Cerberus.Domain.Services
 {
@@ -19,9 +19,9 @@ namespace Intecgra.Cerberus.Domain.Services
         }
 
 
-        public async Task<IEnumerable<TDto>> Get()
+        public async Task<IEnumerable<TDto>> Get(Dictionary<string, dynamic> where = null)
         {
-            return _mapper.Map<IEnumerable<TDto>>(await _repository.Get());
+            return _mapper.Map<IEnumerable<TDto>>(await _repository.Get(where: where));
         }
 
         public async Task<TDto> GetById(object id)
@@ -29,10 +29,11 @@ namespace Intecgra.Cerberus.Domain.Services
             return _mapper.Map<TDto>(await _repository.GetById(id));
         }
 
-        public async Task<TDto> Save(TDto dto)
+        public async Task<TDto> Save<TP>(TDto dto)
         {
             var entity = _mapper.Map<TEntity>(dto);
-            return _mapper.Map<TDto>(await _repository.Save(entity));
+            var id = await _repository.Save<TP>(entity);
+            return _mapper.Map<TDto>(await _repository.GetById(id));
         }
 
         public async Task SaveRange(IEnumerable<TDto> dto)
@@ -63,9 +64,9 @@ namespace Intecgra.Cerberus.Domain.Services
             await _repository.DeleteRange(entities);
         }
 
-        public async Task<TDto> Create(TDto dto)
+        public async Task<TDto> Create<TP>(TDto dto)
         {
-            return await Save(dto);
+            return await Save<TP>(dto);
         }
     }
 }
