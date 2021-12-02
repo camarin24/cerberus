@@ -13,7 +13,7 @@ namespace Intecgra.Cerberus.Domain.Ports
 
         Task<TDto> GetById(object id);
         Task<TDto> Save<TP>(TDto dt);
-        Task SaveRange(IEnumerable<TDto> dto);
+        Task<IEnumerable<TDto>> SaveRange<TP>(IEnumerable<TDto> dto);
         Task Update(TDto entity);
         Task UpdateRange(IEnumerable<TDto> dto);
         Task Delete(TDto entity);

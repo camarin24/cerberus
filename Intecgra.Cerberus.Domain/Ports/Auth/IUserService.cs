@@ -15,9 +15,8 @@ namespace Intecgra.Cerberus.Domain.Ports.Auth
         /// <exception cref="DomainException"></exception>
         /// <exception cref="Exception"></exception>
         Task<AuthorizationDto> Login(LoginDto request);
-
         Task<MeResponseDto> Me(MeRequestDto request);
-
         Task<AuthorizationDto> RefreshToken(MeRequestDto request);
+        Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request);
     }
 }

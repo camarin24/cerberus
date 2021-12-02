@@ -17,7 +17,8 @@ namespace Intecgra.Cerberus.Infrastructure.Utils
         /// <param name="in"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static string BuildSelect<T>(Dictionary<string, dynamic> where = null, object @in = null)
+        public static string BuildSelect<T>(Dictionary<string, dynamic> where = null,
+            Dictionary<string, dynamic> @in = null)
         {
             var builder = new SqlBuilder();
 
@@ -38,10 +39,9 @@ namespace Intecgra.Cerberus.Infrastructure.Utils
 
             if (null != @in)
             {
-                var inType = @in.GetType();
-                foreach (var param in inType.GetProperties())
+                foreach (var param in @in)
                 {
-                    builder.Where($"{param.Name} = ANY(@{param.Name})");
+                    builder.Where($"{param.Key} = ANY(@{param.Key})");
                 }
             }
 
@@ -152,6 +152,7 @@ namespace Intecgra.Cerberus.Infrastructure.Utils
                     qParams.Add(column.Name, value);
                 }
             }
+
             if (qParams.Count > 1) throw new Exception("La entidad no puede contener mas de una clave primaria.");
             queryParams = qParams;
             return $"delete from {tableName} where {primaryKey} = @{primaryKey}";
@@ -170,7 +171,7 @@ namespace Intecgra.Cerberus.Infrastructure.Utils
             return type.GetAttributeValue((Table tbl) => tbl.Name);
         }
 
-        private static string GetPrimaryKey<T>()
+        public static string GetPrimaryKey<T>()
         {
             var columns = GetColumns<T>();
             var primaryKey = columns.Where(m => m.Key).ToList();

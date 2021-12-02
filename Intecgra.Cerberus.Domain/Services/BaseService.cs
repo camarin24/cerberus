@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Intecgra.Cerberus.Domain.Ports;
@@ -36,10 +37,12 @@ namespace Intecgra.Cerberus.Domain.Services
             return _mapper.Map<TDto>(await _repository.GetById(id));
         }
 
-        public async Task SaveRange(IEnumerable<TDto> dto)
+        public async Task<IEnumerable<TDto>> SaveRange<TP>(IEnumerable<TDto> dto)
         {
             var entities = _mapper.Map<IEnumerable<TEntity>>(dto);
-            await _repository.SaveRange(entities);
+            var ids = await _repository.SaveRange<TP>(entities);
+            var createdEntities = await _repository.GetIn(data: ids.ToArray(), inferPk: true);
+            return _mapper.Map<IEnumerable<TDto>>(createdEntities);
         }
 
         public async Task Update(TDto dto)

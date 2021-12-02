@@ -9,7 +9,5 @@ namespace Intecgra.Cerberus.Domain.Dtos.Auth
         public Guid ApplicationId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-
-        public virtual IEnumerable<UserPermissionDto> UserPermissions { get; set; }
     }
 }

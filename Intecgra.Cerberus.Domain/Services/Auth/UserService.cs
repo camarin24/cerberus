@@ -29,11 +29,12 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
         private readonly IClientService _clientService;
         private readonly IConfiguration _configuration;
         private readonly IPermissionService _permissionService;
+        private readonly IUserPermissionService _userPermissionService;
         private readonly ILogger<UserService> _logger;
 
         public UserService(IGenericRepository<User> repository, IMapper mapper, IMessagesManager messagesManager,
             IClientService clientService, IConfiguration configuration, IPermissionService permissionService,
-            ILogger<UserService> logger) : base(
+            IUserPermissionService userPermissionService, ILogger<UserService> logger) : base(
             repository, mapper)
         {
             _repository = repository;
@@ -42,6 +43,7 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             _clientService = clientService;
             _configuration = configuration;
             _permissionService = permissionService;
+            _userPermissionService = userPermissionService;
             _logger = logger;
         }
 
@@ -94,6 +96,27 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             return GenerateAuthorizationDto(user, permissions);
         }
 
+        public async Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request)
+        {
+            var user = await Create(new UserDto
+            {
+                Email = request.Email,
+                Name = request.Name,
+                Password = request.Password,
+                ClientId = request.ClientId
+            });
+            var permissions = await _permissionService.GetPermissionsByName(request.ApplicationId, request.Permissions);
+            if (permissions.Any())
+            {
+                await _userPermissionService.SaveRange<int>(permissions.Select(p => new UserPermissionDto
+                {
+                    PermissionId = p.PermissionId,
+                    UserId = user.UserId
+                }));
+            }
+
+            return user;
+        }
 
         private string GenerateJwtToken(UserDto user, DateTime expiration)
         {
@@ -113,7 +136,6 @@ namespace Intecgra.Cerberus.Domain.Services.Auth
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
 
         private string GenerateJwtRefreshToken(UserDto user)
         {
