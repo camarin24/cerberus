@@ -5,7 +5,8 @@ namespace Intecgra.Cerberus.Domain.Dtos.Auth
 {
     public class AuthorizationDto
     {
-        public AuthorizationDto(string token, string name, string image, string email, IEnumerable<string> permissions, string refreshToken, DateTime expireIn)
+        public AuthorizationDto(string token, string name, string image, string email, IEnumerable<string> permissions,
+            string refreshToken, DateTime expireIn, Guid userId, Guid clientId)
         {
             Token = token;
             Name = name;
@@ -14,10 +15,14 @@ namespace Intecgra.Cerberus.Domain.Dtos.Auth
             Permissions = permissions;
             RefreshToken = refreshToken;
             ExpireIn = expireIn;
+            UserId = userId;
+            ClientId = clientId;
         }
 
         public string Name { get; set; }
         public string Image { get; set; }
+        public Guid UserId { get; set; }
+        public Guid ClientId { get; set; }
         public string Email { get; set; }
         public string Token { get; set; }
 
