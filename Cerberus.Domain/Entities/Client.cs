@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-using System;
+﻿using System;
 using Cerberus.Infrastructure.Data.Attributes;
 
 namespace Cerberus.Domain.Entities;
@@ -9,5 +7,5 @@ namespace Cerberus.Domain.Entities;
 public class Client
 {
     [Key] public Guid ClientId { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

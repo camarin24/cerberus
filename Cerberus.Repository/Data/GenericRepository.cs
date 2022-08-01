@@ -83,9 +83,4 @@ public class GenericRepository<TE> : IGenericRepository<TE> where TE : class
         await using var conn = new NpgsqlConnection(_connectionString);
         return await conn.QueryAsync<TE>(query, parameters);
     }
-
-
-    private async Task MakeAudit(TE entity)
-    {
-    }
 }

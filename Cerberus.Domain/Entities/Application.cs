@@ -7,5 +7,5 @@ namespace Cerberus.Domain.Entities;
 public class Application
 {
     [Key] public Guid ApplicationId { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }
