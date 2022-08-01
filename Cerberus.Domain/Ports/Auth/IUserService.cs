@@ -18,5 +18,6 @@ namespace Cerberus.Domain.Ports.Auth
         Task<MeResponseDto> Me(MeRequestDto request);
         Task<AuthorizationDto> RefreshToken(MeRequestDto request);
         Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request);
+        Task<UserDto> CreateUser(UserDto dto);
     }
 }

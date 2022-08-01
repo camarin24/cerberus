@@ -18,14 +18,13 @@ namespace Cerberus.Repository.Adapters.Auth
         public async Task<IList<Client>> GetByIdAndApplicationId(Guid clientId, Guid applicationId)
         {
             var query = @"select c.* from auth.client as c 
-                            join auth.client_application ca on c.client_id = ca.client_id 
-                            where c.client_id = @ClientId and ca.application_id = @ApplicationId";
-            var queryParams = new Dictionary<string, dynamic>
+                    join auth.client_application ca on c.client_id = ca.client_id  
+                    where c.client_id = @ClientId and ca.application_id = @ApplicationId";
+            var clients = await Query(query, new
             {
-                {"ClientId", clientId},
-                {"ApplicationId", applicationId},
-            };
-            var clients = await ExecuteQuery(query, queryParams);
+                ClientId = clientId,
+                ApplicationId = applicationId
+            });
             return clients.ToList();
         }
     }

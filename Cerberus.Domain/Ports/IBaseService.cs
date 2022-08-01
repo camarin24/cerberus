@@ -9,15 +9,11 @@ namespace Cerberus.Domain.Ports
     public interface IBaseService<TDto>
         where TDto : class
     {
-        Task<IEnumerable<TDto>> Get(Dictionary<string, dynamic> where = null);
-
+        Task<IEnumerable<TDto>> GetAll();
         Task<TDto> GetById(object id);
-        Task<TDto> Save<TP>(TDto dt);
-        Task<IEnumerable<TDto>> SaveRange<TP>(IEnumerable<TDto> dto);
-        Task Update(TDto entity);
-        Task UpdateRange(IEnumerable<TDto> dto);
-        Task Delete(TDto entity);
-        Task DeleteRange(IEnumerable<TDto> dto);
-        Task<TDto> Create<TP>(TDto dto);
+        Task<TK> Create<TK>(TDto dto);
+        Task Create(IEnumerable<TDto> dtos);
+        Task<bool> Update(TDto dto);
+        Task<bool> Delete(int id);
     }
 }

@@ -47,12 +47,13 @@ public class UserService : BaseService<User, UserDto>, IUserService
         _logger = logger;
     }
 
-    public async Task<UserDto> Create(UserDto dto)
+    public async Task<UserDto> CreateUser(UserDto dto)
     {
         dto.Salt = PasswordHash.CreateSalt();
         dto.Picture = GenerateProfilePicture(dto.Name);
         dto.Password = PasswordHash.Create(dto.Password, dto.Salt);
-        return await Save<Guid>(dto);
+        var userId = await Create<Guid>(dto);
+        return await GetById(userId);
     }
 
     private string GenerateProfilePicture(string userName)
@@ -64,7 +65,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
     public async Task<AuthorizationDto> Login(LoginDto request)
     {
         var users =
-            (await Get(where: new Dictionary<string, dynamic>() {{"email", request.Email}})).ToList();
+            (await _repository.Where(new { request.Email})).ToList();
         if (users == null || !users.Any()) throw new DomainException(_messagesManager.GetMessage("InvalidUser"));
         var user = users.FirstOrDefault(m => PasswordHash.Validate(request.Password, m.Password, m.Salt));
         if (user == null) throw new DomainException(_messagesManager.GetMessage("InvalidPassword"));
@@ -73,7 +74,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
 
         var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
-        return GenerateAuthorizationDto(user, permissions);
+        return GenerateAuthorizationDto(_mapper.Map<UserDto>(user), permissions);
     }
 
     private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
@@ -105,7 +106,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
 
     public async Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request)
     {
-        var user = await Create(new UserDto
+        var user = await CreateUser(new UserDto
         {
             Email = request.Email,
             Name = request.Name,
@@ -115,7 +116,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         var permissions = await _permissionService.GetPermissionsByName(request.ApplicationId, request.Permissions);
         if (permissions.Any())
         {
-            await _userPermissionService.SaveRange<int>(permissions.Select(p => new UserPermissionDto
+            await _userPermissionService.Create(permissions.Select(p => new UserPermissionDto
             {
                 PermissionId = p.PermissionId,
                 UserId = user.UserId

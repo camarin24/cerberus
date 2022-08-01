@@ -8,9 +8,9 @@ namespace Cerberus.Domain.Entities
     [Table("auth.permission")]
     public class Permission
     {
-        [Column("permission_id", true)] public int PermissionId { get; set; }
-        [Column("application_id")] public Guid ApplicationId { get; set; }
-        [Column("name")] public string Name { get; set; }
-        [Column("description")] public string Description { get; set; }
+        [Key] public int PermissionId { get; set; }
+        public Guid ApplicationId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }

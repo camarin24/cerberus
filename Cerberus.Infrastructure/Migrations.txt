@@ -1,1 +1,0 @@
-dotnet ef dbcontext scaffold "Host=127.0.0.1;Database=intecgra_cerberus;Username=postgres;Password=Cambiar.100;" Npgsql.EntityFrameworkCore.PostgreSQL -c ContextProvider --context-dir ../Intecgra.Cerberus.Infrastructure/Data -o ../Intecgra.Cerberus.Domain/Entities --schema auth --project Intecgra.Cerberus.Api
