@@ -1,14 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Cerberus.Infrastructure.Data.Attributes
-{
-    public class Table : ValidationAttribute
-    {
-        public Table(string name)
-        {
-            Name = name;
-        }
+namespace Cerberus.Infrastructure.Data.Attributes;
 
-        public string Name { get; set; }
+public class Table : ValidationAttribute
+{
+    public Table(string name)
+    {
+        Name = name;
     }
+
+    public string Name { get; set; }
 }

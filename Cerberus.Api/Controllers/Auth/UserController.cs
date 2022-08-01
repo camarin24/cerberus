@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cerberus.Domain.Dtos.Auth;
 using Cerberus.Domain.Ports.Auth;
@@ -33,7 +31,7 @@ public class UserController : BaseController<UserDto>
         return await _service.CreateUser(user);
     }
 
-    
+
     [HttpPost("create-with-permissions")]
     public async Task<UserDto> CreateWithPermissions(CreateUserWithPermissionsDto request)
     {

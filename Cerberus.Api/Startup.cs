@@ -1,7 +1,5 @@
-using AutoMapper;
 using Cerberus.Api.Extensions;
 using Cerberus.Api.Filters;
-using Cerberus.Domain.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,10 +21,6 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        var mapConfig = new MapperConfiguration(mc => mc.AddProfile(new MappingProfile()));
-        var mapper = mapConfig.CreateMapper();
-        services.AddSingleton(mapper);
-
         services.AddControllers(cfg => { cfg.Filters.Add(typeof(AppExceptionFilter)); });
 
         services.AddAppStore();

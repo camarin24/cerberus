@@ -14,9 +14,9 @@ namespace Cerberus.Repository.Extensions;
 public static class DapperExtension
 {
     /// <summary>
-    /// Returns a single entity by a single id from table "Ts" asynchronously using Task. T must be of interface type. 
-    /// Id must be marked with [Key] attribute.
-    /// Created entity is tracked/intercepted for changes and used by the Update() extension. 
+    ///     Returns a single entity by a single id from table "Ts" asynchronously using Task. T must be of interface type.
+    ///     Id must be marked with [Key] attribute.
+    ///     Created entity is tracked/intercepted for changes and used by the Update() extension.
     /// </summary>
     /// <typeparam name="T">Interface type to create and populate</typeparam>
     /// <param name="connection">Open SqlConnection</param>
@@ -41,10 +41,10 @@ public static class DapperExtension
     }
 
     /// <summary>
-    /// Returns a list of entities from table "Ts".  
-    /// Id of T must be marked with [Key] attribute.
-    /// Entities created from interfaces are tracked/intercepted for changes and used by the Update() extension
-    /// for optimal performance. 
+    ///     Returns a list of entities from table "Ts".
+    ///     Id of T must be marked with [Key] attribute.
+    ///     Entities created from interfaces are tracked/intercepted for changes and used by the Update() extension
+    ///     for optimal performance.
     /// </summary>
     /// <typeparam name="T">Interface or type to create and populate</typeparam>
     /// <param name="connection">Open SqlConnection</param>
@@ -59,7 +59,7 @@ public static class DapperExtension
     }
 
     /// <summary>
-    /// Inserts an entity into table "Ts" asynchronously using Task and returns identity id.
+    ///     Inserts an entity into table "Ts" asynchronously using Task and returns identity id.
     /// </summary>
     /// <typeparam name="T">The type being inserted.</typeparam>
     /// <typeparam name="TK">The type of a key column</typeparam>
@@ -93,7 +93,8 @@ public static class DapperExtension
     }
 
     /// <summary>
-    /// Updates entity in table "Ts" asynchronously using Task, checks if the entity is modified if the entity is tracked by the Get() extension.
+    ///     Updates entity in table "Ts" asynchronously using Task, checks if the entity is modified if the entity is tracked
+    ///     by the Get() extension.
     /// </summary>
     /// <typeparam name="T">Type to be updated</typeparam>
     /// <param name="connection">Open SqlConnection</param>
@@ -109,9 +110,7 @@ public static class DapperExtension
         var (key, snakeKey) = GetPrimaryKey<T>();
         var builder = new SqlBuilder();
         foreach (var column in columns.Where(m => m.Name != key))
-        {
             builder.Set($"{column.Name.ToSnakeCase()} = @{column.Name}");
-        }
 
         builder.Where($"{snakeKey} = @{key}");
 
@@ -121,7 +120,7 @@ public static class DapperExtension
 
 
     /// <summary>
-    /// Delete entity in table "Ts" asynchronously using Task.
+    ///     Delete entity in table "Ts" asynchronously using Task.
     /// </summary>
     /// <typeparam name="T">Type of entity</typeparam>
     /// <param name="connection">Open SqlConnection</param>
@@ -176,8 +175,8 @@ public static class DapperExtension
         }
 
         var builderTemplate = builder.AddTemplate($"{select} /**where**/ ");
-        return await connection.QueryAsync<T>(builderTemplate.RawSql, mergedParams, transaction: transaction,
-            commandTimeout: commandTimeout);
+        return await connection.QueryAsync<T>(builderTemplate.RawSql, mergedParams, transaction,
+            commandTimeout);
     }
 
     private static string BuildSelect<T>()
@@ -186,10 +185,7 @@ public static class DapperExtension
 
         var tableName = GetTableName<T>();
         var columns = GetColumns<T>();
-        foreach (var col in columns)
-        {
-            builder.Select(col.Name.ToSnakeCase());
-        }
+        foreach (var col in columns) builder.Select(col.Name.ToSnakeCase());
 
         var builderTemplate = builder.AddTemplate($"SELECT /**select**/ FROM {tableName}");
         return builderTemplate.RawSql;
@@ -204,7 +200,7 @@ public static class DapperExtension
     private static (string, string) GetPrimaryKey<T>()
     {
         var columns = GetColumns<T>();
-        var primaryKey = columns.Where(m => Enumerable.Any<Key>(m.GetCustomAttributes<Key>())).ToList();
+        var primaryKey = columns.Where(m => m.GetCustomAttributes<Key>().Any()).ToList();
         if (!primaryKey.Any()) throw new Exception("The entity must contain a primary key");
         return (primaryKey.First().Name, primaryKey.First().Name.ToSnakeCase());
     }
@@ -226,10 +222,8 @@ public static class DapperExtension
         where TAttribute : Attribute
     {
         if (type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() is TAttribute att)
-        {
             return valueSelector(att);
-        }
 
-        return default(TValue)!;
+        return default!;
     }
 }

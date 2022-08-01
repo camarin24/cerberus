@@ -1,12 +1,11 @@
 using System;
 
-namespace Cerberus.Domain.Exceptions
+namespace Cerberus.Domain.Exceptions;
+
+[Serializable]
+public class DomainException : DomainBaseException
 {
-    [Serializable]
-    public class DomainException : DomainBaseException
+    public DomainException(string message) : base(message)
     {
-        public DomainException(string message) : base(message)
-        {
-        }
     }
 }

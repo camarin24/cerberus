@@ -8,7 +8,7 @@ namespace Cerberus.Domain.Ports.Auth;
 public interface IPermissionService : IBaseService<PermissionDto>
 {
     /// <summary>
-    /// Get the permissions assigned to de user
+    ///     Get the permissions assigned to de user
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="userId"></param>
@@ -16,7 +16,7 @@ public interface IPermissionService : IBaseService<PermissionDto>
     Task<List<PermissionDto>> GetPermissionsByApplicationAndUser(Guid appId, Guid userId);
 
     /// <summary>
-    /// Get a list of permissions
+    ///     Get a list of permissions
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="names"></param>

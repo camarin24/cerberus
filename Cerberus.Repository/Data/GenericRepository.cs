@@ -52,10 +52,7 @@ public class GenericRepository<TE> : IGenericRepository<TE> where TE : class
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         await using var conn = new NpgsqlConnection(_connectionString);
         await using var transaction = await conn.BeginTransactionAsync();
-        foreach (var entity in entities)
-        {
-            await conn.InsertAsync<TE, dynamic>(entity, transaction);
-        }
+        foreach (var entity in entities) await conn.InsertAsync<TE, dynamic>(entity, transaction);
         await transaction.CommitAsync();
     }
 

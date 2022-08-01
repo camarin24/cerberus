@@ -1,7 +1,6 @@
-namespace Cerberus.Domain.Utilities
+namespace Cerberus.Domain.Utilities;
+
+public interface IMessagesManager
 {
-    public interface IMessagesManager
-    {
-        string GetMessage(string key);
-    }
+    string GetMessage(string key);
 }
