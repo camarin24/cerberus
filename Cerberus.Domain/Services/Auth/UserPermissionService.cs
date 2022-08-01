@@ -24,9 +24,6 @@ public class UserPermissionService : BaseService<UserPermission, UserPermissionD
 
     public async Task<List<UserPermissionDto>> GetPermissionByUserId(Guid userId)
     {
-        var permissions =
-            await _repository.Get(where: new Dictionary<string, dynamic>() {{"user_id", userId}});
-        if (permissions == null) return new List<UserPermissionDto>();
-        return _mapper.Map<List<UserPermissionDto>>(permissions);
+        return _mapper.Map<List<UserPermissionDto>>(await _repository.Where(new {UserId = userId}));
     }
 }

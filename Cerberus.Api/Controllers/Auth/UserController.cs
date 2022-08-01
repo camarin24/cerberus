@@ -30,7 +30,7 @@ public class UserController : BaseController<UserDto>
             Password = request.Password,
             ClientId = request.ClientId
         };
-        return await _service.Create<Guid>(user);
+        return await _service.CreateUser(user);
     }
 
     
@@ -39,13 +39,7 @@ public class UserController : BaseController<UserDto>
     {
         return await _service.CreateUserWithPermissions(request);
     }
-    
-    [HttpGet]
-    public async Task<IEnumerable<UserDto>> Get()
-    {
-        return await _service.Get();
-    }
-    
+
     [HttpPost("login")]
     public async Task<AuthorizationDto> Login(LoginDto request)
     {

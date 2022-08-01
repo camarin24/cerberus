@@ -7,5 +7,5 @@ namespace Cerberus.Domain.Ports.Repository.Auth;
 
 public interface IPermissionRepository : IGenericRepository<Permission>
 {
-    Task<List<Permission>> GetPermissionsByApplicationAndUser(Guid appId, Guid userId);
+    Task<IEnumerable<Permission>> GetPermissionsByApplicationAndUser(Guid appId, Guid userId);
 }

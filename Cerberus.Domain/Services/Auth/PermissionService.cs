@@ -33,11 +33,7 @@ public class PermissionService : BaseService<Permission, PermissionDto>, IPermis
 
     public async Task<IEnumerable<PermissionDto>> GetPermissionsByName(Guid appId, IEnumerable<string> names)
     {
-        var permissions = await _repository.GetIn(@in: new Dictionary<string, dynamic>
-        {
-            {"name", names.ToArray()},
-            {"application_id", new[] {appId}}
-        });
-        return _mapper.Map<List<PermissionDto>>(permissions);
+        var permissions = await _repository.Where(new {ApplicationId = appId}, new {Name = names.ToArray()});
+        return _mapper.Map<IEnumerable<PermissionDto>>(permissions);
     }
 }

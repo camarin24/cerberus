@@ -1,140 +1,94 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dapper;
-using Dapper.Contrib.Extensions;
 using Cerberus.Domain.Ports.Repository;
-using Cerberus.Infrastructure.Utils;
+using Cerberus.Repository.Extensions;
+using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace Cerberus.Repository.Data;
 
-public class GenericRepository<TE> : IDisposable, IGenericRepository<TE> where TE : class, new()
+public class GenericRepository<TE> : IGenericRepository<TE> where TE : class
 {
-    private readonly IConfiguration _configuration;
+    private readonly string? _connectionString;
 
     public GenericRepository(IConfiguration configuration)
     {
-        _configuration = configuration;
+        _connectionString = configuration.GetConnectionString("EntityContext");
     }
 
     public async Task<IEnumerable<TE>> GetAll()
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
+        await using var conn = new NpgsqlConnection(_connectionString);
         return await conn.GetAllAsync<TE>();
     }
 
-    public async Task<IEnumerable<TE>> Get(string query = null, Dictionary<string, dynamic> where = null)
+    public async Task<IEnumerable<TE>> Where(object whereConditions, object? inCondition = null)
     {
+        if (whereConditions == null) throw new ArgumentNullException(nameof(whereConditions));
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        if (string.IsNullOrEmpty(query)) query = QueryBuilder.BuildSelect<TE>(where);
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        return await conn.QueryAsync<TE>(query, where);
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.WhereAsync<TE>(whereConditions, inCondition);
     }
-
-    public async Task<IEnumerable<TE>> ExecuteQuery(string query, Dictionary<string, dynamic> queryParams)
-    {
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        return await conn.QueryAsync<TE>(query, queryParams);
-    }
-
-    public async Task<IEnumerable<TE>> GetIn(string query = null, Dictionary<string, dynamic> @in = null,
-        dynamic data = null, bool inferPk = false)
-    {
-        if (inferPk)
-        {
-            var pk = QueryBuilder.GetPrimaryKey<TE>();
-            @in = new Dictionary<string, dynamic> {{pk, data}};
-        }
-
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
-        if (string.IsNullOrEmpty(query)) query = QueryBuilder.BuildSelect<TE>(@in: @in);
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-
-        var parameter = new DynamicParameters();
-        if (@in != null)
-        {
-            foreach (var p in @in)
-            {
-                parameter.Add($"@{p.Key}", p.Value);
-            }
-
-            return await conn.QueryAsync<TE>(query, parameter);
-        }
-
-        return new List<TE>();
-    }
-
 
     public async Task<TE> GetById(object id)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        var query = QueryBuilder.BuildById<TE>(id, out Dictionary<string, dynamic> queryParams);
-        return await conn.QueryFirstOrDefaultAsync<TE>(query, queryParams);
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.GetByIdAsync<TE>(id);
     }
 
-
-    public async Task<TP> Save<TP>(TE entity)
+    public async Task<TK> Create<TK>(TE entity)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        var query = QueryBuilder.BuildInsert(entity, out var queryParams);
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        return await conn.ExecuteScalarAsync<TP>(query, queryParams);
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.InsertAsync<TE, TK>(entity);
     }
 
-    public async Task Update(TE entity)
+    public async Task Create(IEnumerable<TE> entities)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        var query = QueryBuilder.BuildUpdate(entity, out var queryParams);
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        await conn.QueryAsync(query, queryParams);
-    }
-
-    public async Task Delete(TE entity)
-    {
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
-        var query = QueryBuilder.BuildDelete(entity, out var queryParams);
-        await using var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext"));
-        await conn.QueryAsync(query, queryParams);
-    }
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-    }
-
-
-    public async Task<IEnumerable<TP>> SaveRange<TP>(IEnumerable<TE> entity)
-    {
-        DefaultTypeMap.MatchNamesWithUnderscores = true;
-        await using (var conn = new NpgsqlConnection(_configuration.GetConnectionString("EntityContext")))
+        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var transaction = await conn.BeginTransactionAsync();
+        foreach (var entity in entities)
         {
-            var response = new List<TP>();
-            conn.Open();
-            await using (var trans = await conn.BeginTransactionAsync())
-            {
-                foreach (var e in entity)
-                {
-                    var query = QueryBuilder.BuildInsert(e, out var queryParams);
-                    response.Add(await conn.ExecuteScalarAsync<TP>(query, queryParams));
-                }
-
-                await trans.CommitAsync();
-            }
-
-            return response;
+            await conn.InsertAsync<TE, dynamic>(entity, transaction);
         }
+        await transaction.CommitAsync();
     }
 
-    public async Task DeleteRange(IEnumerable<TE> entity)
+    public async Task<bool> Update(TE entity)
     {
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.UpdateAsync(entity);
     }
 
-    public async Task UpdateRange(IEnumerable<TE> entity)
+    public async Task<bool> Update(IEnumerable<TE> entities)
+    {
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.UpdateAsync(entities);
+    }
+
+    public async Task<bool> Delete(int entityId)
+    {
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.DeleteAsync<TE>(entityId);
+    }
+
+    public async Task<IEnumerable<TE>> Query(string query, object parameters)
+    {
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+        await using var conn = new NpgsqlConnection(_connectionString);
+        return await conn.QueryAsync<TE>(query, parameters);
+    }
+
+
+    private async Task MakeAudit(TE entity)
     {
     }
 }

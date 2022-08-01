@@ -8,7 +8,7 @@ namespace Cerberus.Domain.Entities
     [Table("auth.client")]
     public class Client
     {
-        [Column("client_id", true)] public Guid ClientId { get; set; }
-        [Column("name")] public string Name { get; set; }
+        [Key] public Guid ClientId { get; set; }
+        public string Name { get; set; }
     }
 }
