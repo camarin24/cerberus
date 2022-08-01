@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#nullable disable
+
+using System;
 using Cerberus.Infrastructure.Data.Attributes;
 
-#nullable disable
+namespace Cerberus.Domain.Entities;
 
-namespace Cerberus.Domain.Entities
+[Table("auth.user_permission")]
+public class UserPermission
 {
-    [Table("auth.user_permission")]
-    public class UserPermission
-    {
-        [Key] public int UserPermissionId { get; set; }
-        public int PermissionId { get; set; }
-        public Guid UserId { get; set; }
-    }
+    [Key] public int UserPermissionId { get; set; }
+    public int PermissionId { get; set; }
+    public Guid UserId { get; set; }
 }

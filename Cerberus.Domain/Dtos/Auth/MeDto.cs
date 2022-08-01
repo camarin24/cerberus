@@ -1,33 +1,31 @@
 using System;
 using System.Collections.Generic;
 
-namespace Cerberus.Domain.Dtos.Auth
+namespace Cerberus.Domain.Dtos.Auth;
+
+public class MeRequestDto
 {
-    public class MeRequestDto
+    public string Token { get; set; }
+    public Guid ApplicationId { get; set; }
+}
+
+public class MeResponseDto
+{
+    public MeResponseDto(MeDto user, IEnumerable<string> permissions)
     {
-        public string Token { get; set; }
-        public Guid ApplicationId { get; set; }
+        User = user;
+        Permissions = permissions;
     }
 
-    public class MeResponseDto
-    {
-        public MeResponseDto(MeDto user, IEnumerable<string> permissions)
-        {
-            User = user;
-            Permissions = permissions;
-        }
+    public MeDto User { get; set; }
+    public IEnumerable<string> Permissions { get; set; }
+}
 
-        public MeDto User { get; set; }
-        public IEnumerable<string> Permissions { get; set; }
-    }
-
-
-    public class MeDto
-    {
-        public Guid UserId { get; set; }
-        public string Name { get; set; }
-        public string Picture { get; set; }
-        public string Email { get; set; }
-        public Guid ClientId { get; set; }
-    }
+public class MeDto
+{
+    public Guid UserId { get; set; }
+    public string Name { get; set; }
+    public string Picture { get; set; }
+    public string Email { get; set; }
+    public Guid ClientId { get; set; }
 }

@@ -5,49 +5,48 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace Cerberus.Api.Filters
+namespace Cerberus.Api.Filters;
+
+[AttributeUsage(AttributeTargets.All)]
+public class AppExceptionFilter : ExceptionFilterAttribute
 {
-    [AttributeUsage(AttributeTargets.All)]
-    public class AppExceptionFilter : ExceptionFilterAttribute
+    private readonly ILogger<AppExceptionFilter> _logger;
+
+
+    public AppExceptionFilter(ILogger<AppExceptionFilter> logger)
     {
-        private readonly ILogger<AppExceptionFilter> _logger;
+        _logger = logger;
+    }
 
-
-        public AppExceptionFilter(ILogger<AppExceptionFilter> logger)
+    public override void OnException(ExceptionContext context)
+    {
+        var msg = new
         {
-            _logger = logger;
-        }
+            context.Exception.Message,
+            ExceptionType = context.Exception.GetType().ToString()
+        };
 
-        public override void OnException(ExceptionContext context)
+        var exceptionType = context.Exception.GetType().BaseType;
+        if (exceptionType != null)
         {
-            var msg = new
-            {
-                context.Exception.Message,
-                ExceptionType = context.Exception.GetType().ToString()
-            };
+            var typeExceptionName = exceptionType.Name;
 
-            var exceptionType = context.Exception.GetType().BaseType;
-            if (exceptionType != null)
+            switch (typeExceptionName)
             {
-                var typeExceptionName = exceptionType.Name;
-
-                switch (typeExceptionName)
+                case nameof(DomainBaseException):
                 {
-                    case nameof(DomainBaseException):
-                    {
-                        context.HttpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-                        context.Result = new ObjectResult(msg);
-                    }
-                        break;
-                    default:
-                    {
-                        _logger.Log(LogLevel.Error, context.Exception.Message);
-                        context.HttpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-                        context.Result = new ObjectResult(new
-                            {message = "Ha ocurrido un error interno en la aplicación"});
-                    }
-                        break;
+                    context.HttpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                    context.Result = new ObjectResult(msg);
                 }
+                    break;
+                default:
+                {
+                    _logger.Log(LogLevel.Error, context.Exception.Message);
+                    context.HttpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                    context.Result = new ObjectResult(new
+                        {message = "Ha ocurrido un error interno en la aplicación"});
+                }
+                    break;
             }
         }
     }

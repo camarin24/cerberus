@@ -1,11 +1,10 @@
 using System;
 
-namespace Cerberus.Domain.Dtos.Auth
+namespace Cerberus.Domain.Dtos.Auth;
+
+public class LoginDto
 {
-    public class LoginDto
-    {
-        public Guid AppId { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
+    public Guid AppId { get; set; }
+    public string Email { get; set; }
+    public string Password { get; set; }
 }

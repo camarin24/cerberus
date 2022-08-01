@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
 
-namespace Cerberus.Domain.Dtos.Auth
+namespace Cerberus.Domain.Dtos.Auth;
+
+public class PermissionDto
 {
-    public class PermissionDto
-    {
-        public int PermissionId { get; set; }
-        public Guid ApplicationId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
+    public int PermissionId { get; set; }
+    public Guid ApplicationId { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
 }

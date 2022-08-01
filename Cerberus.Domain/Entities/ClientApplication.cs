@@ -1,15 +1,14 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 using Cerberus.Infrastructure.Data.Attributes;
 
-#nullable disable
+namespace Cerberus.Domain.Entities;
 
-namespace Cerberus.Domain.Entities
+[Table("auth.client_application")]
+public class ClientApplication
 {
-    [Table("auth.client_application")]
-    public class ClientApplication
-    {
-        [Key] public int ClientApplicationId { get; set; }
-        public Guid ApplicationId { get; set; }
-        public Guid ClientId { get; set; }
-    }
+    [Key] public int ClientApplicationId { get; set; }
+    public Guid ApplicationId { get; set; }
+    public Guid ClientId { get; set; }
 }

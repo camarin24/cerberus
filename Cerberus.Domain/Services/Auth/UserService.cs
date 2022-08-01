@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using Cerberus.Domain.Exceptions;
 using Cerberus.Domain.Ports.Auth;
 using Cerberus.Domain.Ports.Repository;
 using Cerberus.Domain.Utilities;
+using Mapster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -23,22 +23,20 @@ namespace Cerberus.Domain.Services.Auth;
 [DomainService]
 public class UserService : BaseService<User, UserDto>, IUserService
 {
-    private readonly IGenericRepository<User> _repository;
-    private readonly IMapper _mapper;
-    private readonly IMessagesManager _messagesManager;
     private readonly IClientService _clientService;
     private readonly IConfiguration _configuration;
-    private readonly IPermissionService _permissionService;
-    private readonly IUserPermissionService _userPermissionService;
     private readonly ILogger<UserService> _logger;
+    private readonly IMessagesManager _messagesManager;
+    private readonly IPermissionService _permissionService;
+    private readonly IGenericRepository<User> _repository;
+    private readonly IUserPermissionService _userPermissionService;
 
     public UserService(IGenericRepository<User> repository, IMapper mapper, IMessagesManager messagesManager,
         IClientService clientService, IConfiguration configuration, IPermissionService permissionService,
         IUserPermissionService userPermissionService, ILogger<UserService> logger) : base(
-        repository, mapper)
+        repository)
     {
         _repository = repository;
-        _mapper = mapper;
         _messagesManager = messagesManager;
         _clientService = clientService;
         _configuration = configuration;
@@ -56,16 +54,10 @@ public class UserService : BaseService<User, UserDto>, IUserService
         return await GetById(userId);
     }
 
-    private string GenerateProfilePicture(string userName)
-    {
-        return HttpUtility.UrlEncode(
-            $"https://ui-avatars.com/api/?name={userName}&bold=true&background=random&rounded=true&size=128&format=svg");
-    }
-
     public async Task<AuthorizationDto> Login(LoginDto request)
     {
         var users =
-            (await _repository.Where(new { request.Email})).ToList();
+            (await _repository.Where(new {request.Email})).ToList();
         if (users == null || !users.Any()) throw new DomainException(_messagesManager.GetMessage("InvalidUser"));
         var user = users.FirstOrDefault(m => PasswordHash.Validate(request.Password, m.Password, m.Salt));
         if (user == null) throw new DomainException(_messagesManager.GetMessage("InvalidPassword"));
@@ -74,15 +66,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
 
         var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
-        return GenerateAuthorizationDto(_mapper.Map<UserDto>(user), permissions);
-    }
-
-    private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
-    {
-        var expiration = DateTime.UtcNow.AddDays(1);
-        return new AuthorizationDto(GenerateJwtToken(user, expiration),
-            user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
-            GenerateJwtRefreshToken(user), expiration, user.UserId, user.ClientId);
+        return GenerateAuthorizationDto(user.Adapt<UserDto>(), permissions);
     }
 
     public async Task<MeResponseDto> Me(MeRequestDto request)
@@ -90,7 +74,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         var claims = ValidateToken(request.Token);
         var user = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
         var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, user);
-        var me = _mapper.Map<MeDto>(await GetById(user));
+        var me = (await GetById(user)).Adapt<MeDto>();
         return new MeResponseDto(me, permissions.Select(m => m.Name));
     }
 
@@ -115,15 +99,27 @@ public class UserService : BaseService<User, UserDto>, IUserService
         });
         var permissions = await _permissionService.GetPermissionsByName(request.ApplicationId, request.Permissions);
         if (permissions.Any())
-        {
             await _userPermissionService.Create(permissions.Select(p => new UserPermissionDto
             {
                 PermissionId = p.PermissionId,
                 UserId = user.UserId
             }));
-        }
 
         return user;
+    }
+
+    private string GenerateProfilePicture(string userName)
+    {
+        return HttpUtility.UrlEncode(
+            $"https://ui-avatars.com/api/?name={userName}&bold=true&background=random&rounded=true&size=128&format=svg");
+    }
+
+    private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
+    {
+        var expiration = DateTime.UtcNow.AddDays(1);
+        return new AuthorizationDto(GenerateJwtToken(user, expiration),
+            user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
+            GenerateJwtRefreshToken(user), expiration, user.UserId, user.ClientId);
     }
 
     private string GenerateJwtToken(UserDto user, DateTime expiration)
@@ -132,14 +128,14 @@ public class UserService : BaseService<User, UserDto>, IUserService
         var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[]
+            Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
             }),
             Expires = expiration,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature),
+                SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
@@ -151,14 +147,14 @@ public class UserService : BaseService<User, UserDto>, IUserService
         var key = Encoding.UTF8.GetBytes(_configuration.GetSection("Authorization:Secret").Value);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[]
+            Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
             }),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature),
+                SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
