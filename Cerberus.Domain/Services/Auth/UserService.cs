@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using AutoMapper;
 using Cerberus.Domain.Dtos.Auth;
 using Cerberus.Domain.Entities;
 using Cerberus.Domain.Exceptions;
@@ -31,7 +30,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
     private readonly IGenericRepository<User> _repository;
     private readonly IUserPermissionService _userPermissionService;
 
-    public UserService(IGenericRepository<User> repository, IMapper mapper, IMessagesManager messagesManager,
+    public UserService(IGenericRepository<User> repository, IMessagesManager messagesManager,
         IClientService clientService, IConfiguration configuration, IPermissionService permissionService,
         IUserPermissionService userPermissionService, ILogger<UserService> logger) : base(
         repository)
@@ -72,7 +71,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
     public async Task<MeResponseDto> Me(MeRequestDto request)
     {
         var claims = ValidateToken(request.Token);
-        var user = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var user = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, user);
         var me = (await GetById(user)).Adapt<MeDto>();
         return new MeResponseDto(me, permissions.Select(m => m.Name));
@@ -81,7 +80,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
     public async Task<AuthorizationDto> RefreshToken(MeRequestDto request)
     {
         var claims = ValidateToken(request.Token);
-        var userId = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        var userId = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var permissions =
             await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, userId);
         var user = await GetById(userId);
