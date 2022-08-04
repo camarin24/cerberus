@@ -2,12 +2,12 @@ import http from 'k6/http';
 import {check, sleep} from 'k6';
 
 export const options = {
-    vus: 10,
-    duration: '60s',
+    vus: 30,
+    duration: '360s',
 };
 
 export default function () {
-    const url = 'http://localhost:80/api/user/login';
+    const url = 'http://localhost:5000/api/user/login';
     const payload = JSON.stringify({
         "appId": "7de7cf59-9268-4651-b5a5-3d0221a257c6",
         "email": "camarin@camarin.com",

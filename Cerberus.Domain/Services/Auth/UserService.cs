@@ -62,9 +62,8 @@ public class UserService : BaseService<User, UserDto>, IUserService
         if (user == null) throw new DomainException(_messagesManager.GetMessage("InvalidPassword"));
 
         // Hacemos esto para asegurarnos que el cliente tiene acceso a la app solicitada
-        await _clientService.GetClientByAppIdAndId(request.AppId, user.ClientId);
-
-        var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.AppId, user.UserId);
+        await _clientService.GetClientByAppIdAndId(request.ApplicationId, user.ClientId);
+        var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, user.UserId);
         return GenerateAuthorizationDto(user.Adapt<UserDto>(), permissions);
     }
 
@@ -106,16 +105,18 @@ public class UserService : BaseService<User, UserDto>, IUserService
 
         return user;
     }
-
+    
+    // TODO: Download and save image in GCP
     private string GenerateProfilePicture(string userName)
     {
         return HttpUtility.UrlEncode(
             $"https://ui-avatars.com/api/?name={userName}&bold=true&background=random&rounded=true&size=128&format=svg");
     }
-
+    
+    // TODO: Add a centralized expiration token time
     private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
     {
-        var expiration = DateTime.UtcNow.AddDays(1);
+        var expiration = DateTime.UtcNow.AddMinutes(1);
         return new AuthorizationDto(GenerateJwtToken(user, expiration),
             user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
             GenerateJwtRefreshToken(user), expiration, user.UserId, user.ClientId);
@@ -151,7 +152,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
                 new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email)
             }),
-            Expires = DateTime.UtcNow.AddDays(7),
+            Expires = DateTime.UtcNow.AddMinutes(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)
         };
