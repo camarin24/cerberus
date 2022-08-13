@@ -1,5 +1,6 @@
 using Cerberus.Api.Extensions;
 using Cerberus.Api.Filters;
+using Cerberus.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,7 @@ public class Startup
     {
         services.AddControllers(cfg => { cfg.Filters.Add(typeof(AppExceptionFilter)); });
 
+        services.AddInfrastructure();
         services.AddAppStore();
 
         services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Cerberus.Api", Version = "v1"}); });
