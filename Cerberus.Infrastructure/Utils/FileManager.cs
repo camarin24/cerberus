@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using Cerberus.Infrastructure.Extensions;
 using Cerberus.Infrastructure.Utils.Ports;
 using Google.Cloud.Storage.V1;
 using Microsoft.Extensions.Configuration;
@@ -15,18 +16,14 @@ public class FileManager : IFileManager
         _configuration = configuration;
     }
 
-    public async Task UploadFile(Stream fileObject, string fileName)
+    public async Task<string> UploadProfilePicture(string userName)
     {
-        var storage = await StorageClient.CreateAsync();
-        await storage.UploadObjectAsync(_configuration.GetSection("GCP:BucketName").Value,
-            fileName, null, fileObject);
-    }
-
-    public async Task UploadFile(string filePath, string fileName)
-    {
+        var (filePath, fileName) = await WebUtils.DownloadFile(
+            string.Format(_configuration.GetSectionValue("Authorization:ProfilePictureUrl"), userName), "svg");
         var storage = await StorageClient.CreateAsync();
         await using var fileStream = File.OpenRead(filePath);
-        await storage.UploadObjectAsync(_configuration.GetSection("GCP:BucketName").Value, fileName,
-            null, fileStream);
+        var bucket = _configuration.GetSectionValue("GCP:BucketName");
+        await storage.UploadObjectAsync(bucket, fileName, "image/svg+xml", fileStream);
+        return $"https://storage.googleapis.com/{bucket}/{fileName}";
     }
 }
