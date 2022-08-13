@@ -16,7 +16,7 @@ public static class ApiExtensions
         service.AddSingleton(typeof(IMessagesManager), typeof(MessageManager));
 
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => !a.FullName.StartsWith("Microsoft.VisualStudio.TraceDataCollector"));
+            .Where(a => a.FullName != null && !a.FullName.StartsWith("Microsoft.VisualStudio.TraceDataCollector"));
 
         var services = assemblies.SelectMany(a => a.GetTypes())
             .Where(t => t.CustomAttributes.Any(c => c.AttributeType == typeof(DomainService)));
@@ -34,8 +34,8 @@ public static class ApiExtensions
 
         foreach (var se in services)
         {
-            var serviceInterface = se.GetInterfaces().FirstOrDefault(i => i.FullName.Contains(se.Name));
-            service.AddTransient(serviceInterface, se);
+            var serviceInterface = se.GetInterfaces().FirstOrDefault(i => i.FullName != null && i.FullName.Contains(se.Name));
+            if (serviceInterface != null) service.AddTransient(serviceInterface, se);
         }
 
         return service;
