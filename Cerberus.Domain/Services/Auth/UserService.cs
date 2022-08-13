@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Cerberus.Contracts.Auth;
 using Cerberus.Domain.Dtos.Auth;
 using Cerberus.Domain.Entities;
 using Cerberus.Domain.Exceptions;
@@ -56,7 +57,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         return await GetById(userId);
     }
 
-    public async Task<AuthorizationDto> Login(LoginDto request)
+    public async Task<AuthorizationContract> Login(LoginDto request)
     {
         var users =
             (await _repository.Where(new {request.Email})).ToList();
@@ -71,16 +72,16 @@ public class UserService : BaseService<User, UserDto>, IUserService
         return GenerateAuthorizationDto(user.Adapt<UserDto>(), permissions);
     }
 
-    public async Task<MeResponseDto> Me(MeRequestDto request)
+    public async Task<MeResponseContract> Me(MeRequestContract request)
     {
         var claims = ValidateToken(request.Token);
         var user = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var permissions = await _permissionService.GetPermissionsByApplicationAndUser(request.ApplicationId, user);
-        var me = (await GetById(user)).Adapt<MeDto>();
-        return new MeResponseDto(me, permissions.Select(m => m.Name));
+        var me = (await GetById(user)).Adapt<MeContract>();
+        return new MeResponseContract(me, permissions.Select(m => m.Name));
     }
 
-    public async Task<AuthorizationDto> RefreshToken(MeRequestDto request)
+    public async Task<AuthorizationContract> RefreshToken(MeRequestContract request)
     {
         var claims = ValidateToken(request.Token);
         var userId = Guid.Parse(claims.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -90,7 +91,7 @@ public class UserService : BaseService<User, UserDto>, IUserService
         return GenerateAuthorizationDto(user, permissions);
     }
 
-    public async Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request)
+    public async Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsContract request)
     {
         var user = await CreateUser(new UserDto
         {
@@ -110,10 +111,10 @@ public class UserService : BaseService<User, UserDto>, IUserService
         return user;
     }
 
-    private AuthorizationDto GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
+    private AuthorizationContract GenerateAuthorizationDto(UserDto user, IEnumerable<PermissionDto> permissions)
     {
         var expiration = DateTime.UtcNow.AddDays(_configuration.GetSectionVale("Authorization:TokenExpirationTime"));
-        return new AuthorizationDto(GenerateJwtToken(user, expiration),
+        return new AuthorizationContract(GenerateJwtToken(user, expiration),
             user.Name, user.Picture, user.Email, permissions.Select(m => m.Name),
             GenerateJwtRefreshToken(user), expiration, user.UserId, user.ClientId);
     }

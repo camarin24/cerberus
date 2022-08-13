@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cerberus.Contracts.Auth;
 using Cerberus.Domain.Dtos.Auth;
 using Cerberus.Domain.Ports.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,7 @@ public class UserController : BaseController<UserDto>
     }
 
     [HttpPost("create")]
-    public async Task<UserDto> Create(CreateUserDto request)
+    public async Task<UserDto> Create(CreateUserContract request)
     {
         var user = new UserDto
         {
@@ -33,25 +34,25 @@ public class UserController : BaseController<UserDto>
 
 
     [HttpPost("create-with-permissions")]
-    public async Task<UserDto> CreateWithPermissions(CreateUserWithPermissionsDto request)
+    public async Task<UserDto> CreateWithPermissions(CreateUserWithPermissionsContract request)
     {
         return await _service.CreateUserWithPermissions(request);
     }
 
     [HttpPost("login")]
-    public async Task<AuthorizationDto> Login(LoginDto request)
+    public async Task<AuthorizationContract> Login(LoginDto request)
     {
         return await _service.Login(request);
     }
 
     [HttpPost("refresh-token")]
-    public async Task<AuthorizationDto> RefreshToken(MeRequestDto request)
+    public async Task<AuthorizationContract> RefreshToken(MeRequestContract request)
     {
         return await _service.RefreshToken(request);
     }
 
     [HttpPost("me")]
-    public async Task<MeResponseDto> Me(MeRequestDto request)
+    public async Task<MeResponseContract> Me(MeRequestContract request)
     {
         return await _service.Me(request);
     }

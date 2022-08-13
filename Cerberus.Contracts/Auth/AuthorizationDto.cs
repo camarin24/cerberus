@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
+namespace Cerberus.Contracts.Auth;
 
-namespace Cerberus.Domain.Dtos.Auth;
-
-public class AuthorizationDto
+public class AuthorizationContract
 {
-    public AuthorizationDto(string token, string name, string image, string email, IEnumerable<string> permissions,
+    public AuthorizationContract(string token, string name, string image, string email, IEnumerable<string> permissions,
         string refreshToken, DateTime expireIn, Guid userId, Guid clientId)
     {
         Token = token;
