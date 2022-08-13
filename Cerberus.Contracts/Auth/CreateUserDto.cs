@@ -1,8 +1,6 @@
-using System;
+namespace Cerberus.Contracts.Auth;
 
-namespace Cerberus.Domain.Dtos.Auth;
-
-public class CreateUserDto
+public class CreateUserContract
 {
     public Guid ClientId { get; set; }
     public string Name { get; set; } = null!;

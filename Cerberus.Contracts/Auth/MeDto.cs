@@ -1,27 +1,24 @@
-using System;
-using System.Collections.Generic;
+namespace Cerberus.Contracts.Auth;
 
-namespace Cerberus.Domain.Dtos.Auth;
-
-public class MeRequestDto
+public class MeRequestContract
 {
     public string Token { get; set; } = null!;
     public Guid ApplicationId { get; set; }
 }
 
-public class MeResponseDto
+public class MeResponseContract
 {
-    public MeResponseDto(MeDto user, IEnumerable<string> permissions)
+    public MeResponseContract(MeContract user, IEnumerable<string> permissions)
     {
         User = user;
         Permissions = permissions;
     }
 
-    public MeDto User { get; set; }
+    public MeContract User { get; set; }
     public IEnumerable<string> Permissions { get; set; }
 }
 
-public class MeDto
+public class MeContract
 {
     public Guid UserId { get; set; }
     public string Name { get; set; } = null!;

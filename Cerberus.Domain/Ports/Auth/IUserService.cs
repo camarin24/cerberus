@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Cerberus.Contracts.Auth;
 using Cerberus.Domain.Dtos.Auth;
 using Cerberus.Domain.Exceptions;
 
@@ -14,10 +15,10 @@ public interface IUserService : IBaseService<UserDto>
     /// <returns></returns>
     /// <exception cref="DomainException"></exception>
     /// <exception cref="Exception"></exception>
-    Task<AuthorizationDto> Login(LoginDto request);
+    Task<AuthorizationContract> Login(LoginDto request);
 
-    Task<MeResponseDto> Me(MeRequestDto request);
-    Task<AuthorizationDto> RefreshToken(MeRequestDto request);
-    Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsDto request);
+    Task<MeResponseContract> Me(MeRequestContract request);
+    Task<AuthorizationContract> RefreshToken(MeRequestContract request);
+    Task<UserDto> CreateUserWithPermissions(CreateUserWithPermissionsContract request);
     Task<UserDto> CreateUser(UserDto dto);
 }

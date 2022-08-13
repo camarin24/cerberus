@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Cerberus.Contracts\Cerberus.Contracts.csproj" />
         <ProjectReference Include="..\Cerberus.Infrastructure\Cerberus.Infrastructure.csproj" />
     </ItemGroup>
 
